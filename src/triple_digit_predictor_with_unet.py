@@ -5,17 +5,7 @@ import keras.backend as TF
 import time
 from keras.models import load_model
 import tensorflow as tf
-
-
-vidcap = cv2.VideoCapture(0)
-count=0
-success,fimage = vidcap.read()
-img_size = (224,224)
-font = cv2.FONT_HERSHEY_SIMPLEX
-
-config = tf.ConfigProto()
-config.gpu_options.allow_growth = True
-sess = tf.Session(config = config)
+from keras.utils.generic_utils import CustomObjectScope
 
 def dice_coef(y_true, y_pred):
     y_true_f = TF.flatten(y_true)
@@ -27,13 +17,21 @@ img_width = 224
 img_height = 224
 channels = 3
 
+vidcap = cv2.VideoCapture(0)
+count=0
+success,fimage = vidcap.read()
+img_size = (224,224)
+font = cv2.FONT_HERSHEY_SIMPLEX
+
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config = config)
+
 model_hand = load_model('my_color_model.hdf5',custom_objects={'dice_coef':dice_coef})
 
 
-from keras.utils.generic_utils import CustomObjectScope
-
 with CustomObjectScope({'relu6': keras.applications.mobilenet.relu6,'DepthwiseConv2D': keras.applications.mobilenet.DepthwiseConv2D}):model_predict = load_model('drivev1_2(224,224_10).hdf5')
-	#model_predict = load_model('mobile(224,224_1).hdf5')
+	model_predict = load_model('mobile(224,224_1).hdf5')
 #model_predict.summary()
 
 max12 = np.zeros(3)
