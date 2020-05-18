@@ -5,7 +5,17 @@ import keras.backend as TF
 import time
 from keras.models import load_model
 import tensorflow as tf
+from keras.utils.generic_utils import CustomObjectScope
 
+def dice_coef(y_true, y_pred):
+    y_true_f = TF.flatten(y_true)
+    y_pred_f = TF.flatten(y_pred)
+    intersection = TF.sum(y_true_f * y_pred_f)
+    return (2. * intersection + TF.epsilon()) / (TF.sum(y_true_f) + TF.sum(y_pred_f) + TF.epsilon())
+
+img_width = 224
+img_height = 224
+channels = 3
 
 vidcap = cv2.VideoCapture(0)
 count=0
@@ -33,16 +43,6 @@ for c in range(30,0,-1):
 	cv2.putText(fimage, str(c), (50, 50), font, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
 	cv2.imshow('Gesture', fimage)
 print('done')
-
-def dice_coef(y_true, y_pred):
-    y_true_f = TF.flatten(y_true)
-    y_pred_f = TF.flatten(y_pred)
-    intersection = TF.sum(y_true_f * y_pred_f)
-    return (2. * intersection + TF.epsilon()) / (TF.sum(y_true_f) + TF.sum(y_pred_f) + TF.epsilon())
-
-img_width = 224
-img_height = 224
-channels = 3
 
 model_hand = load_model('my_color_model.hdf5',custom_objects={'dice_coef':dice_coef})
 
@@ -95,8 +95,6 @@ if(len(contours)>0):
   
 else:
   print('No Hand detected')
-
-from keras.utils.generic_utils import CustomObjectScope
 
 with CustomObjectScope({'relu6': keras.applications.mobilenet.relu6,'DepthwiseConv2D': keras.applications.mobilenet.DepthwiseConv2D}):
 	model_predict = load_model('drivev1_2(224,224_10).hdf5')
